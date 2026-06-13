@@ -2,6 +2,8 @@
 
 Track every job application from applied to offer. Built with React, Vite, and Firebase.
 
+**Live demo:** https://offerbound.vercel.app
+
 **Why I built this:** I was applying to frontend roles and tracking everything in my head.
 OfferBound gives me a single dashboard for every application — status, follow-up reminders,
 notes from recruiter calls — synced across devices.
