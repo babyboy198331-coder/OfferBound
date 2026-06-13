@@ -2,8 +2,8 @@ import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
-// ── Paste your Firebase project config here ──
-// Firebase Console → Project Settings → Your apps → SDK setup and configuration
+// Firebase web app config — these are public client identifiers, safe to commit.
+// Data access is protected by Firestore security rules, not by these values.
 const firebaseConfig = {
   apiKey: 'AIzaSyDxEfZ9qra9fYy2ps-_pJEFR9bLoDUer30',
   authDomain: 'offerbound-ed972.firebaseapp.com',
