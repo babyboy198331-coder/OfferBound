@@ -1,11 +1,12 @@
 import { isFirebaseConfigured } from '../lib/firebase'
 
-export default function Header({ user, onSignOut }) {
+export default function Header({ user, isPro, onSignOut, onUpgrade, onExport }) {
   return (
     <header className="header">
       <div className="container header__inner">
         <div className="logo">
           Offer<span className="logo__accent">Bound</span>
+          {isPro && <span className="pro-badge">PRO</span>}
         </div>
         <div className="header__right">
           {!isFirebaseConfigured && (
@@ -13,12 +14,18 @@ export default function Header({ user, onSignOut }) {
               Local mode
             </span>
           )}
+          {isPro && (
+            <button className="btn btn--ghost btn--sm" onClick={onExport} title="Export applications and bids to CSV">
+              ⬇ Export CSV
+            </button>
+          )}
+          {!isPro && (
+            <button className="btn btn--primary btn--sm" onClick={onUpgrade}>
+              ✨ Upgrade to Pro
+            </button>
+          )}
           {user && (
-            <div className="header__user">
-              <button className="btn btn--ghost" onClick={onSignOut}>
-                Sign out
-              </button>
-            </div>
+            <button className="btn btn--ghost" onClick={onSignOut}>Sign out</button>
           )}
         </div>
       </div>

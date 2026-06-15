@@ -8,6 +8,8 @@ const BLANK = {
   location: '',
   status: 'applied',
   dateApplied: new Date().toISOString().slice(0, 10),
+  interviewDate: '',
+  interviewTime: '',
   notes: '',
 }
 
@@ -74,6 +76,18 @@ export default function AppForm({ initial, onSave, onClose }) {
               <input id="f-link" className="input" type="url" value={form.link} onChange={set('link')} placeholder="https://…" />
             </div>
           </div>
+          {(form.status === 'interviewing') && (
+            <div className="form__row">
+              <div className="form__field">
+                <label htmlFor="f-interview-date">Interview Date</label>
+                <input id="f-interview-date" className="input" type="date" value={form.interviewDate} onChange={set('interviewDate')} />
+              </div>
+              <div className="form__field">
+                <label htmlFor="f-interview-time">Interview Time</label>
+                <input id="f-interview-time" className="input" type="time" value={form.interviewTime} onChange={set('interviewTime')} />
+              </div>
+            </div>
+          )}
           <div className="form__field">
             <label htmlFor="f-notes">Notes</label>
             <textarea id="f-notes" className="input" rows="3" value={form.notes} onChange={set('notes')} placeholder="Recruiter name, salary range, next steps…" />

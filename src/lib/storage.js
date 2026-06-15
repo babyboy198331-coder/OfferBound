@@ -9,6 +9,8 @@ import {
   onSnapshot,
   query,
   orderBy,
+  getDoc,
+  setDoc,
 } from 'firebase/firestore'
 import { db, isFirebaseConfigured } from './firebase'
 
@@ -85,6 +87,21 @@ export async function deleteApplication(user, id) {
     writeLocal(readLocal().filter((a) => a.id !== id))
     notifyLocal()
   }
+}
+
+// ── Subscription ──
+export async function getSubscription(user) {
+  if (!isFirebaseConfigured || !user) return { isPro: false }
+  const snap = await getDoc(doc(db, 'users', user.uid, 'subscription', 'status'))
+  return snap.exists() ? snap.data() : { isPro: false }
+}
+
+export async function setProStatus(user, isPro) {
+  if (!isFirebaseConfigured || !user) return
+  await setDoc(doc(db, 'users', user.uid, 'subscription', 'status'), {
+    isPro,
+    updatedAt: Date.now(),
+  }, { merge: true })
 }
 
 // ── Bids ──
