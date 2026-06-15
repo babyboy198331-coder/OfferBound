@@ -20,7 +20,6 @@ export default function Header({ user, onSignIn, onSignOut }) {
           )}
           {user && (
             <div className="header__user">
-              <span className="header__email">{user.email}</span>
               <button className="btn btn--ghost" onClick={onSignOut}>
                 Sign out
               </button>
