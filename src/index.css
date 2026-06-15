@@ -171,6 +171,21 @@ body {
 .input:focus { outline: none; border-color: var(--accent); }
 .input::placeholder { color: var(--fg-3); }
 textarea.input { resize: vertical; }
+.input__wrapper { position: relative; display: flex; align-items: center; }
+.input__wrapper .input { padding-right: 40px; }
+.input__eye {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--fg-3);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 160ms;
+}
+.input__eye:hover { color: var(--fg); }
 
 /* ── Application cards ── */
 .app-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 64px; }
