@@ -1,6 +1,6 @@
 import { isFirebaseConfigured } from '../lib/firebase'
 
-export default function Header({ user, onSignIn, onSignOut }) {
+export default function Header({ user, onSignOut }) {
   return (
     <header className="header">
       <div className="container header__inner">
@@ -12,11 +12,6 @@ export default function Header({ user, onSignIn, onSignOut }) {
             <span className="badge badge--local" title="Data is saved in this browser. Add your Firebase config to sync across devices.">
               Local mode
             </span>
-          )}
-          {isFirebaseConfigured && !user && (
-            <button className="btn btn--ghost" onClick={onSignIn}>
-              Sign in with Google
-            </button>
           )}
           {user && (
             <div className="header__user">

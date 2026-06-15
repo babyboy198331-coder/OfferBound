@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth, GoogleAuthProvider } from 'firebase/auth'
+import { getAuth, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 // Firebase web app config — these are public client identifiers, safe to commit.
@@ -27,4 +27,4 @@ if (isFirebaseConfigured) {
   googleProvider = new GoogleAuthProvider()
 }
 
-export { auth, db, googleProvider }
+export { auth, db, googleProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword }

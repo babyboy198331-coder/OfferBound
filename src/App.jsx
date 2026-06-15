@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
-import { auth, googleProvider, isFirebaseConfigured } from './lib/firebase'
+import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { auth, isFirebaseConfigured } from './lib/firebase'
 import {
   subscribeToApplications,
   addApplication,
@@ -8,6 +8,7 @@ import {
   deleteApplication,
 } from './lib/storage'
 import Header from './components/Header'
+import SignIn from './components/SignIn'
 import Stats from './components/Stats'
 import Filters from './components/Filters'
 import ApplicationList from './components/ApplicationList'
@@ -37,7 +38,6 @@ export default function App() {
     return subscribeToApplications(user, setApps)
   }, [user, authReady])
 
-  const handleSignIn = () => signInWithPopup(auth, googleProvider)
   const handleSignOut = () => signOut(auth)
 
   async function handleSave(data) {
@@ -75,11 +75,14 @@ export default function App() {
     return matchesSearch && matchesStatus
   })
 
+  if (isFirebaseConfigured && authReady && !user) {
+    return <SignIn />
+  }
+
   return (
     <>
       <Header
         user={user}
-        onSignIn={handleSignIn}
         onSignOut={handleSignOut}
       />
       <main className="container">

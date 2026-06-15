@@ -303,6 +303,81 @@ textarea.input { resize: vertical; }
   margin-top: 6px;
 }
 
+/* ── Sign-in page ── */
+.signin-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+}
+.signin-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: 16px;
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.signin-logo {
+  font-size: 22px;
+  text-align: center;
+}
+.signin-title {
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  margin-top: -8px;
+}
+.signin-error {
+  font-size: 13px;
+  color: var(--red);
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+}
+.signin-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--fg-3);
+  font-size: 12px;
+}
+.signin-divider::before,
+.signin-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-2);
+}
+.signin-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+.signin-toggle {
+  text-align: center;
+  font-size: 13px;
+  color: var(--fg-3);
+}
+.signin-toggle__btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+.signin-toggle__btn:hover { text-decoration: underline; }
+
 /* ── Responsive ── */
 @media (max-width: 640px) {
   .stats { grid-template-columns: repeat(2, 1fr); }
