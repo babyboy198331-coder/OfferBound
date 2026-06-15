@@ -126,6 +126,58 @@ body {
   color: var(--fg-3);
 }
 
+/* ── Tab Nav ── */
+.tab-nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border);
+}
+.tab-nav__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg-3);
+  cursor: pointer;
+  transition: color 160ms, border-color 160ms;
+}
+.tab-nav__btn:hover { color: var(--fg); }
+.tab-nav__btn--active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-nav__count {
+  background: var(--bg-3);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-2);
+}
+.tab-nav__btn--active .tab-nav__count { background: var(--accent); color: #fff; }
+
+/* ── Bid card extras ── */
+.card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+.card__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--fg-2);
+}
+.card__meta-item--urgent { color: #e05c5c; font-weight: 600; }
+.card__meta-icon { font-size: 14px; }
+
 /* ── Filters ── */
 .filters {
   display: flex;
