@@ -1,18 +1,20 @@
 import { useState } from 'react'
-import { signInWithPopup } from 'firebase/auth'
+import { signInWithPopup, sendPasswordResetEmail } from 'firebase/auth'
 import { auth, googleProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../lib/firebase'
 
 export default function SignIn() {
-  const [mode, setMode] = useState('signin') // 'signin' | 'signup'
+  const [mode, setMode] = useState('signin') // 'signin' | 'signup' | 'forgot'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
   async function handleEmail(e) {
     e.preventDefault()
     setError('')
+    setSuccess('')
     setLoading(true)
     try {
       if (mode === 'signup') {
@@ -27,8 +29,25 @@ export default function SignIn() {
     }
   }
 
+  async function handleForgotPassword(e) {
+    e.preventDefault()
+    setError('')
+    setSuccess('')
+    if (!email) { setError('Enter your email address above first.'); return }
+    setLoading(true)
+    try {
+      await sendPasswordResetEmail(auth, email)
+      setSuccess('Reset link sent! Check your inbox (and spam folder).')
+    } catch (err) {
+      setError(friendlyError(err.code))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function handleGoogle() {
     setError('')
+    setSuccess('')
     try {
       await signInWithPopup(auth, googleProvider)
     } catch (err) {
@@ -47,6 +66,47 @@ export default function SignIn() {
       case 'auth/too-many-requests': return 'Too many attempts. Please try again later.'
       default: return 'Something went wrong. Please try again.'
     }
+  }
+
+  if (mode === 'forgot') {
+    return (
+      <div className="signin-page">
+        <div className="signin-card">
+          <div className="logo signin-logo">
+            Offer<span className="logo__accent">Bound</span>
+          </div>
+          <h1 className="signin-title">Reset password</h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+            Enter your email and we'll send you a reset link.
+          </p>
+          <form className="form" onSubmit={handleForgotPassword}>
+            <div className="form__field">
+              <label htmlFor="reset-email">Email</label>
+              <input
+                id="reset-email"
+                className="input"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+            {error && <p className="signin-error">{error}</p>}
+            {success && <p className="signin-success">{success}</p>}
+            <button className="btn btn--primary" type="submit" disabled={loading}>
+              {loading ? 'Sending…' : 'Send reset link'}
+            </button>
+          </form>
+          <p className="signin-toggle" style={{ marginTop: '1rem' }}>
+            <button className="signin-toggle__btn" onClick={() => { setMode('signin'); setError(''); setSuccess('') }}>
+              ← Back to sign in
+            </button>
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -105,9 +165,19 @@ export default function SignIn() {
                 )}
               </button>
             </div>
+            {mode === 'signin' && (
+              <button
+                type="button"
+                className="signin-forgot"
+                onClick={() => { setMode('forgot'); setError(''); setSuccess('') }}
+              >
+                Forgot password?
+              </button>
+            )}
           </div>
 
           {error && <p className="signin-error">{error}</p>}
+          {success && <p className="signin-success">{success}</p>}
 
           <button className="btn btn--primary" type="submit" disabled={loading}>
             {loading ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Create account'}
@@ -130,7 +200,7 @@ export default function SignIn() {
           {mode === 'signin' ? "Don't have an account? " : 'Already have an account? '}
           <button
             className="signin-toggle__btn"
-            onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError('') }}
+            onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); setSuccess('') }}
           >
             {mode === 'signin' ? 'Sign up' : 'Sign in'}
           </button>
