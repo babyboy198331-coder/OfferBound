@@ -11,5 +11,5 @@ export const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/7sY8wQd9NduVa8q5cXebu
 export const FREE_TIER_LIMIT = 25
 export const PRO_PRICE = '$14.99'
 
-// Resume Scanner: free accounts get a handful of lifetime scans, Pro is unlimited.
+// Resume Scanner: free accounts get a handful of scans per day, Pro is unlimited.
 export const FREE_SCAN_LIMIT = 3

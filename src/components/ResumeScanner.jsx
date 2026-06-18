@@ -73,8 +73,8 @@ export default function ResumeScanner({ user, isPro, onUpgrade }) {
         {!isPro && countReady && (
           <span className={`scanner__usage${limitReached ? ' scanner__usage--full' : ''}`}>
             {limitReached
-              ? `Free scans used up — `
-              : `${scansLeft} of ${FREE_SCAN_LIMIT} free scans left — `}
+              ? `Free scans used up for today — `
+              : `${scansLeft} of ${FREE_SCAN_LIMIT} free scans left today — `}
             <button className="scanner__upgrade-link" onClick={() => onUpgrade('scanLimit')}>
               upgrade for unlimited ✨
             </button>
@@ -85,8 +85,8 @@ export default function ResumeScanner({ user, isPro, onUpgrade }) {
       {limitReached && !result ? (
         <div className="scanner__locked">
           <span className="scanner__locked-icon">🔒</span>
-          <h3>You've used all {FREE_SCAN_LIMIT} free scans</h3>
-          <p>Upgrade to Pro for unlimited resume scans and AI hints.</p>
+          <h3>You've used all {FREE_SCAN_LIMIT} free scans for today</h3>
+          <p>Come back tomorrow, or upgrade to Pro for unlimited resume scans and AI hints.</p>
           <button className="btn btn--primary" onClick={() => onUpgrade('scanLimit')}>
             Upgrade to Pro →
           </button>

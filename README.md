@@ -17,7 +17,7 @@ notes from recruiter calls — synced across devices.
 - Google sign-in with per-user cloud data (Firestore)
 - Works offline-first: without Firebase config it falls back to localStorage
 - Resume Scanner: upload a resume + job description, get an ATS match score, matched/missing
-  keyword breakdown, format issues, and an AI hint chat for each issue (3 free scans, unlimited on Pro)
+  keyword breakdown, format issues, and an AI hint chat for each issue (3 free scans/day, unlimited on Pro)
 
 ## Tech stack
 

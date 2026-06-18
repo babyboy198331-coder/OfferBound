@@ -39,7 +39,7 @@ export default function UpgradeModal({ onClose, reason = 'limit' }) {
               <li>✓ Basic dashboard</li>
               <li>✓ Status tracking</li>
               <li>✓ Job bids tracking</li>
-              <li>✓ {FREE_SCAN_LIMIT} resume scans</li>
+              <li>✓ {FREE_SCAN_LIMIT} resume scans/day</li>
             </ul>
           </div>
 
