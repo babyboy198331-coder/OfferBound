@@ -16,6 +16,8 @@ notes from recruiter calls — synced across devices.
 - Search and status filters
 - Google sign-in with per-user cloud data (Firestore)
 - Works offline-first: without Firebase config it falls back to localStorage
+- Resume Scanner: upload a resume + job description, get an ATS match score, matched/missing
+  keyword breakdown, format issues, and an AI hint chat for each issue (3 free scans, unlimited on Pro)
 
 ## Tech stack
 
@@ -39,6 +41,14 @@ npm run dev
 
 ## Deploy
 
-Push to GitHub, import the repo in Vercel, framework preset "Vite" — no env vars needed.
+Push to GitHub, import the repo in Vercel, framework preset "Vite".
 Then add your Vercel domain in Firebase Console → Authentication → Settings →
 Authorized domains so Google sign-in works in production.
+
+For the Resume Scanner API routes (`api/analyze.js`, `api/fix-chat.js`), set these
+env vars in Vercel → Settings → Environment Variables (see `.env.example`):
+
+- `GEMINI_API_KEY` — from https://aistudio.google.com/app/apikey
+- `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` — a Firebase
+  Admin service account key (Firebase Console → Project Settings → Service Accounts),
+  used only for per-IP daily abuse throttling, separate from the free/Pro scan limit.

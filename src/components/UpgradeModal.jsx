@@ -1,4 +1,4 @@
-import { STRIPE_PAYMENT_LINK, PRO_PRICE, FREE_TIER_LIMIT } from '../lib/stripe'
+import { STRIPE_PAYMENT_LINK, PRO_PRICE, FREE_TIER_LIMIT, FREE_SCAN_LIMIT } from '../lib/stripe'
 
 export default function UpgradeModal({ onClose, reason = 'limit' }) {
   const handleUpgrade = () => {
@@ -20,6 +20,13 @@ export default function UpgradeModal({ onClose, reason = 'limit' }) {
           </p>
         )}
 
+        {reason === 'scanLimit' && (
+          <p className="upgrade-modal__reason">
+            You've used your free <strong>Resume Scanner</strong> scans.
+            Upgrade to Pro for unlimited ATS scans and AI hints.
+          </p>
+        )}
+
         <div className="upgrade-modal__plans">
           {/* Free */}
           <div className="plan plan--free">
@@ -32,6 +39,7 @@ export default function UpgradeModal({ onClose, reason = 'limit' }) {
               <li>✓ Basic dashboard</li>
               <li>✓ Status tracking</li>
               <li>✓ Job bids tracking</li>
+              <li>✓ {FREE_SCAN_LIMIT} resume scans</li>
             </ul>
           </div>
 
@@ -50,6 +58,7 @@ export default function UpgradeModal({ onClose, reason = 'limit' }) {
               <li>✓ Email reminders</li>
               <li>✓ Export to CSV &amp; PDF</li>
               <li>✓ AI follow-up emails</li>
+              <li>✓ <strong>Unlimited</strong> resume scans + AI hints</li>
             </ul>
             <button className="btn btn--primary upgrade-modal__cta" onClick={handleUpgrade}>
               Upgrade to Pro →

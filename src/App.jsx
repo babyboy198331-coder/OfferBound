@@ -18,6 +18,7 @@ import BidList from './components/BidList'
 import BidForm from './components/BidForm'
 import Analytics from './components/Analytics'
 import UpgradeModal from './components/UpgradeModal'
+import ResumeScanner from './components/ResumeScanner'
 
 export default function App() {
   const [user, setUser] = useState(null)
@@ -129,6 +130,11 @@ export default function App() {
     exportToCSV(apps, bids)
   }
 
+  function openUpgrade(reason) {
+    setUpgradeReason(reason)
+    setUpgradeOpen(true)
+  }
+
   const visible = apps.filter((a) => {
     const q = search.toLowerCase()
     const matchesSearch = !q || a.company.toLowerCase().includes(q) || a.role.toLowerCase().includes(q)
@@ -179,6 +185,9 @@ export default function App() {
           <button className={`tab-nav__btn${tab === 'analytics' ? ' tab-nav__btn--active' : ''}`} onClick={() => setTab('analytics')}>
             Analytics {!isPro && <span className="tab-nav__lock">🔒</span>}
           </button>
+          <button className={`tab-nav__btn${tab === 'scanner' ? ' tab-nav__btn--active' : ''}`} onClick={() => setTab('scanner')}>
+            Resume Scanner ✨
+          </button>
         </div>
 
         {tab === 'applications' && (
@@ -224,6 +233,10 @@ export default function App() {
             isPro={isPro}
             onUpgrade={() => { setUpgradeReason('feature'); setUpgradeOpen(true) }}
           />
+        )}
+
+        {tab === 'scanner' && (
+          <ResumeScanner user={user} isPro={isPro} onUpgrade={openUpgrade} />
         )}
       </main>
 
