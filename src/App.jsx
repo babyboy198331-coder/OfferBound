@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { auth, isFirebaseConfigured } from './lib/firebase'
 import {
@@ -35,6 +35,16 @@ export default function App() {
   const [editingBid, setEditingBid] = useState(null)
   const [upgradeOpen, setUpgradeOpen] = useState(false)
   const [upgradeReason, setUpgradeReason] = useState('limit')
+  const tabContentRef = useRef(null)
+
+  const selectTab = (next) => {
+    setTab(next)
+    if (next === 'scanner') {
+      requestAnimationFrame(() => {
+        tabContentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
+  }
 
   useEffect(() => {
     if (!isFirebaseConfigured) return
@@ -165,7 +175,7 @@ export default function App() {
           <button className={`tab-nav__btn${tab === 'analytics' ? ' tab-nav__btn--active' : ''}`} onClick={() => setTab('analytics')}>
             Analytics {!isPro && <span className="tab-nav__lock">🔒</span>}
           </button>
-          <button className={`tab-nav__btn${tab === 'scanner' ? ' tab-nav__btn--active' : ''}`} onClick={() => setTab('scanner')}>
+          <button className={`tab-nav__btn${tab === 'scanner' ? ' tab-nav__btn--active' : ''}`} onClick={() => selectTab('scanner')}>
             Resume Scanner ✨
           </button>
         </div>
@@ -236,7 +246,9 @@ export default function App() {
         )}
 
         {tab === 'scanner' && (
-          <ResumeScanner user={user} isPro={isPro} onUpgrade={openUpgrade} />
+          <div ref={tabContentRef}>
+            <ResumeScanner user={user} isPro={isPro} onUpgrade={openUpgrade} />
+          </div>
         )}
       </main>
 
