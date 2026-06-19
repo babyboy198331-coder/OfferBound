@@ -154,24 +154,6 @@ export default function App() {
         onExport={handleExportCSV}
       />
       <main className="container">
-        {/* Free tier usage bar */}
-        {!isPro && (
-          <div className="usage-bar">
-            <div className="usage-bar__info">
-              <span>{apps.length} / {FREE_TIER_LIMIT} applications used</span>
-              <button className="usage-bar__upgrade" onClick={() => { setUpgradeReason('limit'); setUpgradeOpen(true) }}>
-                Upgrade for unlimited ✨
-              </button>
-            </div>
-            <div className="usage-bar__track">
-              <div
-                className={`usage-bar__fill${apps.length >= FREE_TIER_LIMIT ? ' usage-bar__fill--full' : ''}`}
-                style={{ width: `${Math.min((apps.length / FREE_TIER_LIMIT) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
-
         {/* Tab nav */}
         <div className="tab-nav">
           <button className={`tab-nav__btn${tab === 'applications' ? ' tab-nav__btn--active' : ''}`} onClick={() => setTab('applications')}>
@@ -189,6 +171,24 @@ export default function App() {
         </div>
 
         <Stats apps={apps} bids={bids} />
+
+        {/* Free tier usage bar */}
+        {!isPro && (
+          <div className="usage-bar">
+            <div className="usage-bar__info">
+              <span>{apps.length} / {FREE_TIER_LIMIT} applications used</span>
+              <button className="usage-bar__upgrade" onClick={() => { setUpgradeReason('limit'); setUpgradeOpen(true) }}>
+                Upgrade for unlimited ✨
+              </button>
+            </div>
+            <div className="usage-bar__track">
+              <div
+                className={`usage-bar__fill${apps.length >= FREE_TIER_LIMIT ? ' usage-bar__fill--full' : ''}`}
+                style={{ width: `${Math.min((apps.length / FREE_TIER_LIMIT) * 100, 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         {tab === 'applications' && (
           <>
