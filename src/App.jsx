@@ -154,8 +154,6 @@ export default function App() {
         onExport={handleExportCSV}
       />
       <main className="container">
-        <Stats apps={apps} bids={bids} />
-
         {/* Free tier usage bar */}
         {!isPro && (
           <div className="usage-bar">
@@ -189,6 +187,8 @@ export default function App() {
             Resume Scanner ✨
           </button>
         </div>
+
+        <Stats apps={apps} bids={bids} />
 
         {tab === 'applications' && (
           <>
