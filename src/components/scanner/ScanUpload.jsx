@@ -1,15 +1,132 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
+import ScanQuickPreview from './ScanQuickPreview'
+import ScanJDPreview from './ScanJDPreview'
 
 // Point to the PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
+
+const PREVIEW_DEBOUNCE_MS = 900
 
 export default function ScanUpload({ onAnalyze, loading, error }) {
   const [resumeText, setResumeText] = useState('')
   const [jobDescription, setJobDescription] = useState('')
   const [fileName, setFileName] = useState('')
   const [pdfError, setPdfError] = useState('')
+  const [preview, setPreview] = useState(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [jdPreview, setJdPreview] = useState(null)
+  const [jdPreviewLoading, setJdPreviewLoading] = useState(false)
   const fileInputRef = useRef(null)
+  const lastPreviewedRef = useRef('')
+  const previewTimerRef = useRef(null)
+  const previewAbortRef = useRef(null)
+  const lastJdPreviewedRef = useRef('')
+  const jdPreviewTimerRef = useRef(null)
+  const jdPreviewAbortRef = useRef(null)
+
+  // Instant feedback: as soon as resume text is long enough, fetch a quick
+  // resume-only preview (skills, role types, rough quality score) — before
+  // the user has even pasted a job description.
+  useEffect(() => {
+    const text = resumeText.trim()
+
+    if (previewTimerRef.current) clearTimeout(previewTimerRef.current)
+
+    if (text.length < 50) {
+      setPreview(null)
+      setPreviewLoading(false)
+      lastPreviewedRef.current = ''
+      return
+    }
+
+    if (text === lastPreviewedRef.current) return
+
+    previewTimerRef.current = setTimeout(async () => {
+      if (previewAbortRef.current) previewAbortRef.current.abort()
+      const controller = new AbortController()
+      previewAbortRef.current = controller
+
+      setPreviewLoading(true)
+      try {
+        const res = await fetch('/api/preview-resume', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resumeText: text }),
+          signal: controller.signal,
+        })
+        const data = await res.json()
+        if (res.ok) {
+          setPreview(data)
+          lastPreviewedRef.current = text
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          // Quiet failure — the quick preview is a nice-to-have, not critical.
+          console.error('Quick preview failed:', err)
+        }
+      } finally {
+        setPreviewLoading(false)
+      }
+    }, PREVIEW_DEBOUNCE_MS)
+
+    return () => {
+      if (previewTimerRef.current) clearTimeout(previewTimerRef.current)
+    }
+  }, [resumeText])
+
+  // Same idea, but for the job description: instant required skills,
+  // ATS keywords, and a difficulty score as soon as it's pasted in — plus a
+  // rough match estimate if a resume is already present.
+  useEffect(() => {
+    const text = jobDescription.trim()
+    const dedupeKey = `${text}::${resumeText.trim().length >= 50 ? resumeText.trim() : ''}`
+
+    if (jdPreviewTimerRef.current) clearTimeout(jdPreviewTimerRef.current)
+
+    if (text.length < 50) {
+      setJdPreview(null)
+      setJdPreviewLoading(false)
+      lastJdPreviewedRef.current = ''
+      return
+    }
+
+    if (dedupeKey === lastJdPreviewedRef.current) return
+
+    jdPreviewTimerRef.current = setTimeout(async () => {
+      if (jdPreviewAbortRef.current) jdPreviewAbortRef.current.abort()
+      const controller = new AbortController()
+      jdPreviewAbortRef.current = controller
+
+      setJdPreviewLoading(true)
+      try {
+        const res = await fetch('/api/preview-jd', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jobDescription: text,
+            resumeText: resumeText.trim().length >= 50 ? resumeText.trim() : undefined,
+          }),
+          signal: controller.signal,
+        })
+        const data = await res.json()
+        if (res.ok) {
+          setJdPreview(data)
+          lastJdPreviewedRef.current = dedupeKey
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('JD quick preview failed:', err)
+        }
+      } finally {
+        setJdPreviewLoading(false)
+      }
+    }, PREVIEW_DEBOUNCE_MS)
+
+    return () => {
+      if (jdPreviewTimerRef.current) clearTimeout(jdPreviewTimerRef.current)
+    }
+  }, [jobDescription, resumeText])
 
   const processFile = async (file) => {
     if (!file) return
@@ -123,6 +240,8 @@ export default function ScanUpload({ onAnalyze, loading, error }) {
             }}
             rows={10}
           />
+
+          <ScanQuickPreview preview={preview} loading={previewLoading} />
         </div>
 
         <div className="scan-card">
@@ -137,6 +256,8 @@ export default function ScanUpload({ onAnalyze, loading, error }) {
             onChange={(e) => setJobDescription(e.target.value)}
             rows={16}
           />
+
+          <ScanJDPreview preview={jdPreview} loading={jdPreviewLoading} />
         </div>
       </div>
 

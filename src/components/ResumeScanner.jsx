@@ -92,7 +92,7 @@ export default function ResumeScanner({ user, isPro, onUpgrade }) {
           </button>
         </div>
       ) : result ? (
-        <ScanResults result={result} inputs={inputs} onReset={handleReset} />
+        <ScanResults result={result} inputs={inputs} onReset={handleReset} isPro={isPro} onUpgrade={onUpgrade} />
       ) : (
         <ScanUpload onAnalyze={handleAnalyze} loading={loading} error={error} />
       )}

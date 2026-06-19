@@ -13,3 +13,8 @@ export const PRO_PRICE = '$14.99'
 
 // Resume Scanner: free accounts get a handful of scans per day, Pro is unlimited.
 export const FREE_SCAN_LIMIT = 3
+
+// Resume Scanner: free scans show full results but only reveal this many
+// items per insight category (missing keywords, format issues, suggestions)
+// — the rest are shown as a locked "+N more, unlock with Pro" teaser.
+export const FREE_INSIGHT_LIMIT = 3

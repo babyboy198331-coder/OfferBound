@@ -27,6 +27,13 @@ export default function UpgradeModal({ onClose, reason = 'limit' }) {
           </p>
         )}
 
+        {reason === 'scanInsights' && (
+          <p className="upgrade-modal__reason">
+            Your scan found more issues than the free plan shows.
+            Upgrade to Pro to unlock every missing keyword, format issue, and AI suggestion — plus a full AI resume rewrite.
+          </p>
+        )}
+
         <div className="upgrade-modal__plans">
           {/* Free */}
           <div className="plan plan--free">
@@ -59,6 +66,8 @@ export default function UpgradeModal({ onClose, reason = 'limit' }) {
               <li>✓ Export to CSV &amp; PDF</li>
               <li>✓ AI follow-up emails</li>
               <li>✓ <strong>Unlimited</strong> resume scans + AI hints</li>
+              <li>✓ <strong>All</strong> missing keywords, format issues &amp; suggestions</li>
+              <li>✓ Full AI resume rewrite</li>
             </ul>
             <button className="btn btn--primary upgrade-modal__cta" onClick={handleUpgrade}>
               Upgrade to Pro →

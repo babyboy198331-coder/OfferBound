@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import ScanHintDrawer from './ScanHintDrawer'
+import ScanBulletPreview from './ScanBulletPreview'
+import ScanRewriteDrawer from './ScanRewriteDrawer'
+import { FREE_INSIGHT_LIMIT } from '../../lib/stripe'
 
 function ScoreRing({ score }) {
   const radius = 54
@@ -52,7 +55,7 @@ function TagList({ items, variant }) {
   )
 }
 
-function IssueRowList({ items, onHint }) {
+function IssueRowList({ items, onHint, locked = false, onUpgrade }) {
   if (!items || items.length === 0) return <p className="scan-empty">None identified</p>
   return (
     <ul className="scan-issue-list">
@@ -62,16 +65,49 @@ function IssueRowList({ items, onHint }) {
           <button className="scan-hint-btn" onClick={() => onHint(item)}>Get AI hint</button>
         </li>
       ))}
+      {locked > 0 && (
+        <li className="scan-issue-row scan-issue-row--locked">
+          <span className="scan-issue-row__text scan-issue-row__text--locked">
+            🔒 +{locked} more {locked === 1 ? 'item' : 'items'} found
+          </span>
+          <button className="scan-hint-btn scan-hint-btn--upgrade" onClick={onUpgrade}>
+            Unlock with Pro
+          </button>
+        </li>
+      )}
     </ul>
   )
 }
 
-export default function ScanResults({ result, inputs, onReset }) {
+export default function ScanResults({ result, inputs, onReset, isPro, onUpgrade }) {
   const { score, summary, matchedKeywords, missingKeywords, formatIssues, suggestions } = result
   const [activeIssue, setActiveIssue] = useState(null)
+  const [showRewrite, setShowRewrite] = useState(false)
 
   const openHint = (issueType) => (issueText) => setActiveIssue({ issueType, issueText })
   const closeHint = () => setActiveIssue(null)
+
+  const handleFullRewriteClick = () => {
+    if (isPro) {
+      setShowRewrite(true)
+    } else {
+      onUpgrade?.('scanInsights')
+    }
+  }
+
+  const gate = (items) => {
+    if (isPro || !items) return { visible: items, locked: 0 }
+    return {
+      visible: items.slice(0, FREE_INSIGHT_LIMIT),
+      locked: Math.max(items.length - FREE_INSIGHT_LIMIT, 0),
+    }
+  }
+
+  const missingGated = gate(missingKeywords)
+  const formatGated = gate(formatIssues)
+  const suggestionsGated = gate(suggestions)
+
+  const handleUpgradeClick = () => onUpgrade?.('scanInsights')
 
   return (
     <div className="scan-results">
@@ -104,7 +140,12 @@ export default function ScanResults({ result, inputs, onReset }) {
             Missing Keywords
             <span className="scan-count">{missingKeywords?.length || 0}</span>
           </h3>
-          <IssueRowList items={missingKeywords} onHint={openHint('missingKeyword')} />
+          <IssueRowList
+            items={missingGated.visible}
+            onHint={openHint('missingKeyword')}
+            locked={missingGated.locked}
+            onUpgrade={handleUpgradeClick}
+          />
         </div>
 
         <div className="scan-card">
@@ -113,7 +154,12 @@ export default function ScanResults({ result, inputs, onReset }) {
             Format Issues
             <span className="scan-count">{formatIssues?.length || 0}</span>
           </h3>
-          <IssueRowList items={formatIssues} onHint={openHint('formatIssue')} />
+          <IssueRowList
+            items={formatGated.visible}
+            onHint={openHint('formatIssue')}
+            locked={formatGated.locked}
+            onUpgrade={handleUpgradeClick}
+          />
         </div>
 
         <div className="scan-card scan-card--suggestions">
@@ -121,7 +167,39 @@ export default function ScanResults({ result, inputs, onReset }) {
             <span className="scan-dot scan-dot--blue" />
             AI Hints &amp; Recommendations
           </h3>
-          <IssueRowList items={suggestions} onHint={openHint('suggestion')} />
+          <IssueRowList
+            items={suggestionsGated.visible}
+            onHint={openHint('suggestion')}
+            locked={suggestionsGated.locked}
+            onUpgrade={handleUpgradeClick}
+          />
+        </div>
+
+        {inputs && (
+          <ScanBulletPreview
+            resumeText={inputs.resumeText}
+            jobDescription={inputs.jobDescription}
+            onUpgrade={onUpgrade}
+          />
+        )}
+
+        <div className={`scan-card scan-card--rewrite${isPro ? '' : ' scan-card--rewrite-locked'}`}>
+          <h3 className="scan-card__heading">
+            <span className="scan-dot scan-dot--green" />
+            Full AI Resume Rewrite
+            {!isPro && <span className="scan-pro-badge">Pro</span>}
+          </h3>
+          <p className="scan-bullet__intro">
+            {isPro
+              ? 'Generate a complete, ATS-optimized rewrite of your entire resume, tailored to this job.'
+              : 'Unlock a complete, ATS-optimized rewrite of your entire resume — not just one bullet.'}
+          </p>
+          <button
+            className={`btn ${isPro ? 'btn--secondary' : 'btn--primary'} scan-bullet__cta`}
+            onClick={handleFullRewriteClick}
+          >
+            {isPro ? '✨ Generate full rewrite' : '🔒 Unlock with Pro'}
+          </button>
         </div>
       </div>
 
@@ -132,6 +210,14 @@ export default function ScanResults({ result, inputs, onReset }) {
           resumeText={inputs.resumeText}
           jobDescription={inputs.jobDescription}
           onClose={closeHint}
+        />
+      )}
+
+      {showRewrite && inputs && (
+        <ScanRewriteDrawer
+          resumeText={inputs.resumeText}
+          jobDescription={inputs.jobDescription}
+          onClose={() => setShowRewrite(false)}
         />
       )}
     </div>
