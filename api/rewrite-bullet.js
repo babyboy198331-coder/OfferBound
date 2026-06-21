@@ -1,4 +1,5 @@
 import { getClientIp, checkAndIncrementRateLimit } from "./_lib/rateLimit.js";
+import { callGroqJSON } from "./_lib/groq.js";
 
 // Teaser feature: rewrite exactly ONE weak bullet from the resume, tailored
 // to the job description, to demonstrate what the full Pro AI rewrite does.
@@ -6,6 +7,17 @@ import { getClientIp, checkAndIncrementRateLimit } from "./_lib/rateLimit.js";
 // rewrite (Phase 3), not be gated itself. Cheap, single-bullet output, so a
 // generous per-IP ceiling is fine.
 const DAILY_IP_LIMIT = 120;
+
+const SCHEMA = {
+  type: "object",
+  properties: {
+    originalBullet: { type: "string" },
+    rewrittenBullet: { type: "string" },
+    reason: { type: "string" },
+  },
+  required: ["originalBullet", "rewrittenBullet", "reason"],
+  additionalProperties: false,
+};
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -18,7 +30,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Resume and job description are required." });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: "API key not configured." });
   }
@@ -38,70 +50,24 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Something went wrong. Please try again." });
   }
 
-  const prompt = `
-You are an expert resume writer. Find the SINGLE weakest bullet point in this resume — vague, no metrics, passive language, or low relevance to the job description — and rewrite just that one bullet to be strong, quantified, and tailored to the job description. Return structured JSON only — no markdown, no explanation, just raw JSON.
+  const systemPrompt = `You are an expert resume writer. Find the SINGLE weakest bullet point in the resume — vague, no metrics, passive language, or low relevance to the job description — and rewrite just that one bullet to be strong, quantified, and tailored to the job description. Pick only ONE bullet — the one with the most room for improvement. Keep the rewrite truthful to the original content (don't invent facts), just sharpen wording, add structure, and quantify impact where plausible.`;
 
-RESUME:
-${resumeText}
-
-JOB DESCRIPTION:
-${jobDescription}
-
-Return this exact JSON structure:
-{
-  "originalBullet": "<the exact weak bullet copied from the resume, unmodified>",
-  "rewrittenBullet": "<your improved rewrite of that one bullet>",
-  "reason": "<one short sentence on what specifically was improved>"
-}
-
-Pick only ONE bullet — the one with the most room for improvement. Keep the rewrite truthful to the original content (don't invent facts), just sharpen wording, add structure, and quantify impact where plausible.
-`;
+  const userPrompt = `RESUME:\n${resumeText}\n\nJOB DESCRIPTION:\n${jobDescription}`;
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.3,
-            maxOutputTokens: 1024,
-            responseMimeType: "application/json",
-            thinkingConfig: { thinkingBudget: 0 },
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("Gemini error:", err);
-      return res.status(500).json({ error: "Failed to generate rewrite example." });
-    }
-
-    const data = await response.json();
-    const candidate = data.candidates?.[0];
-    const raw = candidate?.content?.parts?.[0]?.text || "";
-
-    if (!raw) {
-      return res.status(500).json({ error: "Failed to generate rewrite example." });
-    }
-
-    const clean = raw.replace(/```json|```/g, "").trim();
-
-    let result;
-    try {
-      result = JSON.parse(clean);
-    } catch (parseErr) {
-      console.error("JSON parse failed for rewrite-bullet:", parseErr, "raw:", raw);
-      return res.status(500).json({ error: "Failed to generate rewrite example." });
-    }
+    const { result } = await callGroqJSON({
+      apiKey,
+      systemPrompt,
+      userPrompt,
+      schemaName: "bullet_rewrite",
+      schema: SCHEMA,
+      temperature: 0.3,
+      maxTokens: 1024,
+    });
 
     return res.status(200).json(result);
   } catch (err) {
-    console.error("Handler error:", err);
-    return res.status(500).json({ error: "Something went wrong. Please try again." });
+    console.error("Groq error:", err);
+    return res.status(500).json({ error: "Failed to generate rewrite example." });
   }
 }

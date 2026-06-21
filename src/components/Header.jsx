@@ -1,10 +1,12 @@
 import { isFirebaseConfigured } from '../lib/firebase'
+import Logo from './Logo'
 
 export default function Header({ user, isPro, onSignOut, onUpgrade, onExport }) {
   return (
     <header className="header">
       <div className="container header__inner">
         <div className="logo">
+          <Logo size={22} className="logo__mark" />
           Offer<span className="logo__accent">Bound</span>
           {isPro && <span className="pro-badge">PRO</span>}
         </div>

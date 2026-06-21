@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { signInWithPopup, sendPasswordResetEmail } from 'firebase/auth'
 import { auth, googleProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../lib/firebase'
+import Logo from './Logo'
 
 export default function SignIn() {
   const [mode, setMode] = useState('signin') // 'signin' | 'signup' | 'forgot'
@@ -73,6 +74,7 @@ export default function SignIn() {
       <div className="signin-page">
         <div className="signin-card">
           <div className="logo signin-logo">
+            <Logo size={28} className="logo__mark" />
             Offer<span className="logo__accent">Bound</span>
           </div>
           <h1 className="signin-title">Reset password</h1>
@@ -113,6 +115,7 @@ export default function SignIn() {
     <div className="signin-page">
       <div className="signin-card">
         <div className="logo signin-logo">
+          <Logo size={28} className="logo__mark" />
           Offer<span className="logo__accent">Bound</span>
         </div>
         <h1 className="signin-title">

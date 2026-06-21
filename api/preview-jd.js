@@ -1,10 +1,23 @@
 import { getClientIp, checkAndIncrementRateLimit } from "./_lib/rateLimit.js";
+import { callGroqJSON } from "./_lib/groq.js";
 
 // Lightweight, cheap call (small output, low token budget) so we can afford
 // a much more generous per-IP ceiling than the full /api/analyze endpoint.
 // This does NOT count against the user's free/Pro scan limit — it's just
 // instant feedback while they're still filling out the form.
 const DAILY_IP_LIMIT = 300;
+
+const SCHEMA = {
+  type: "object",
+  properties: {
+    difficultyScore: { type: "number" },
+    requiredSkills: { type: "array", items: { type: "string" } },
+    keywords: { type: "array", items: { type: "string" } },
+    quickMatchEstimate: { type: ["number", "null"] },
+  },
+  required: ["difficultyScore", "requiredSkills", "keywords", "quickMatchEstimate"],
+  additionalProperties: false,
+};
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -17,7 +30,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Job description is required." });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: "API key not configured." });
   }
@@ -39,69 +52,32 @@ export default async function handler(req, res) {
 
   const hasResume = resumeText && resumeText.trim().length >= 50;
 
-  const prompt = `
-You are an expert recruiter and ATS analyst. Quickly scan this job description on its own and return structured JSON only — no markdown, no explanation, just raw JSON.
+  const systemPrompt = `You are an expert recruiter and ATS analyst. Quickly scan the job description on its own. difficultyScore (0-100) reflects how competitive/demanding the role is: seniority, required years, breadth of skills. requiredSkills is up to 8 of the most important hard requirements. keywords is up to 12 exact terms an ATS would scan for, taken verbatim from the job description. ${
+    hasResume
+      ? "quickMatchEstimate is a number 0-100, a rough estimate of how well the provided resume matches this JD."
+      : "Set quickMatchEstimate to null since no resume was provided."
+  } Be fast and concise.`;
 
-JOB DESCRIPTION:
-${jobDescription}
-${hasResume ? `\nCANDIDATE RESUME (for a rough, quick match estimate only — not a full analysis):\n${resumeText}` : ""}
-
-Return this exact JSON structure:
-{
-  "difficultyScore": <number 0-100, how competitive/demanding this role is: seniority, required years, breadth of skills>,
-  "requiredSkills": ["<skill1>", "<skill2>", ...up to 8, the most important hard requirements],
-  "keywords": ["<keyword1>", "<keyword2>", ...up to 12, exact terms an ATS would scan for],
-  "quickMatchEstimate": ${hasResume ? "<number 0-100, rough estimate of how well the resume matches this JD>" : "null"}
-}
-
-Be fast and concise. Use exact terms from the job description for keywords.
-`;
+  const userPrompt = `JOB DESCRIPTION:\n${jobDescription}${
+    hasResume
+      ? `\n\nCANDIDATE RESUME (for a rough, quick match estimate only — not a full analysis):\n${resumeText}`
+      : ""
+  }`;
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.2,
-            maxOutputTokens: 1024,
-            responseMimeType: "application/json",
-            thinkingConfig: { thinkingBudget: 0 },
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("Gemini error:", err);
-      return res.status(500).json({ error: "Failed to preview job description." });
-    }
-
-    const data = await response.json();
-    const candidate = data.candidates?.[0];
-    const raw = candidate?.content?.parts?.[0]?.text || "";
-
-    if (!raw) {
-      return res.status(500).json({ error: "Failed to preview job description." });
-    }
-
-    const clean = raw.replace(/```json|```/g, "").trim();
-
-    let result;
-    try {
-      result = JSON.parse(clean);
-    } catch (parseErr) {
-      console.error("JSON parse failed for preview-jd:", parseErr, "raw:", raw);
-      return res.status(500).json({ error: "Failed to preview job description." });
-    }
+    const { result } = await callGroqJSON({
+      apiKey,
+      systemPrompt,
+      userPrompt,
+      schemaName: "jd_preview",
+      schema: SCHEMA,
+      temperature: 0.2,
+      maxTokens: 1024,
+    });
 
     return res.status(200).json(result);
   } catch (err) {
-    console.error("Handler error:", err);
-    return res.status(500).json({ error: "Something went wrong. Please try again." });
+    console.error("Groq error:", err);
+    return res.status(500).json({ error: "Failed to preview job description." });
   }
 }

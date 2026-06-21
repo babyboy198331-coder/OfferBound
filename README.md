@@ -48,7 +48,7 @@ Authorized domains so Google sign-in works in production.
 For the Resume Scanner API routes (`api/analyze.js`, `api/fix-chat.js`), set these
 env vars in Vercel → Settings → Environment Variables (see `.env.example`):
 
-- `GEMINI_API_KEY` — from https://aistudio.google.com/app/apikey
+- `GROQ_API_KEY` — from https://console.groq.com/keys
 - `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` — a Firebase
   Admin service account key (Firebase Console → Project Settings → Service Accounts),
   used only for per-IP daily abuse throttling, separate from the free/Pro scan limit.
